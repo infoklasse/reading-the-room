@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Geoman Map with Measurement</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+    <!-- Geoman CSS -->
+    <link
+    rel="stylesheet"
+    href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css"
+  />    <!-- Leaflet Measure Path CSS -->
+  <link href="
+  https://cdn.jsdelivr.net/npm/leaflet-measure@3.1.0/dist/leaflet-measure.min.css
+  " rel="stylesheet"></head>
+
+  <style>
+
+    #map{
+        height: 100vh;
+        width: 100vw;
+    }
+    .radius-label {
+        background: white;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        text-align: center;
+        position: fixed;
+        top: 30;
+        z-index: 99999999;
+        font-size: 16px;
+    }
+</style>
+<body>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Geoman JS -->
+    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
+    <!-- Leaflet Measure Path JS -->
+    <script src="
+    https://cdn.jsdelivr.net/npm/leaflet-measure@3.1.0/dist/leaflet-measure.es.min.js
+    "></script>
+
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([52.49231657975498, 13.35873136039194], 17);
+
+        // Load a tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Enable Geoman with default toolbar
+        map.pm.addControls();
+
+        var radiusLabel = L.DomUtil.create('div', 'radius-label');
+    map.getContainer().appendChild(radiusLabel);
+
+    // Function to update the radius label
+    function updateRadiusLabel(radius) {
+        radiusLabel.innerHTML = `Radius: ${radius.toFixed(2)} meters`;
+    }
+
+    // Event listener for when a circle is being drawn
+    map.on('pm:drawstart', function (e) {
+        var layer = e.workingLayer;
+        map.on('mousemove', function (mouseEvent) {
+            var center = layer.getLatLng();
+            var radius = center.distanceTo(mouseEvent.latlng);
+            updateRadiusLabel(radius);
+        });
+    });
+
+    // Event listener for when drawing is finished
+    map.on('pm:create', function (e) {
+        var layer = e.layer;
+        if (layer instanceof L.Circle) {
+            var radius = layer.getRadius();
+            updateRadiusLabel(radius);
+            map.off('mousemove');
+        }
+    });
+
+    // Event listener for when a circle is edited
+    map.on('pm:edit', function (e) {
+        var layer = e.layer;
+        if (layer instanceof L.Circle) {
+            var radius = layer.getRadius();
+            updateRadiusLabel(radius);
+        }
+    });      
+
+    </script>
+
+
+</body>
+</html>
